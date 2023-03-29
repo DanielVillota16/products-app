@@ -54,14 +54,14 @@ const keylessViews: KeylessView[] = [
     icon: <ShoppingCartOutlined />,
     menuName: "Products",
     viewTitle: "Products 🛒",
-    route: "/products",
+    route: "products",
     component: Products,
   },
   {
     icon: <UserOutlined />,
     menuName: "Account",
     viewTitle: "Account 👤",
-    route: "/account",
+    route: "account",
     component: Account,
   }
 ]
@@ -132,9 +132,9 @@ function App() {
             />
             <Routes>
               {
-                views.map((view: View) => <Route path={view.route} Component={view.component} />)
+                views.map((view: View, index: number) => <Route key={index} path={view.route} Component={view.component} />)
               }
-              <Route path='*' element={<Navigate to='/products' replace />} />
+              <Route path='*' element={<Navigate to='/products' />} />
             </Routes>
           </Content>
           <Footer style={{ textAlign: 'center' }}>¯\_(ツ)_/¯</Footer>
