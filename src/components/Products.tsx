@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Divider, Form, Image, Input, InputNumber, Popconfirm, Table, Typography } from "antd";
 
 interface Item {
-  key: string;
+  key: React.Key;
   name: string;
   description: string;
   productImageURL: string;
@@ -70,7 +70,7 @@ const Products = () => {
 
   const [form] = Form.useForm();
   const [data, setData] = useState(originData);
-  const [editingKey, setEditingKey] = useState('');
+  const [editingKey, setEditingKey] = useState<React.Key>('');
 
   const isEditing = (record: Item) => record.key === editingKey;
 
@@ -115,7 +115,7 @@ const Products = () => {
     setData(fixedKeys);
   }
 
-  const remove = (key: string) => {
+  const remove = (key: React.Key) => {
     const newData = [...data];
     const index = newData.findIndex((item: Item) => key === item.key);
     if (index > -1) {
