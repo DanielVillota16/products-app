@@ -1,7 +1,7 @@
 import { Breadcrumb, Layout, Menu, Typography } from "antd";
-import { HomeOutlined, ShoppingCartOutlined, FormatPainterOutlined, UserOutlined } from '@ant-design/icons';
+import { HomeOutlined, ShoppingCartOutlined, UserOutlined } from '@ant-design/icons';
 import { Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
-import reactLogo from './assets/react.svg';
+import reactLogo from '../assets/react.svg';
 import { useContext, useState } from "react";
 import { ItemType } from "antd/es/menu/hooks/useItems";
 import Account from "./Account";

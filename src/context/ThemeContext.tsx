@@ -1,5 +1,6 @@
-import { ConfigProvider } from 'antd';
+import { ConfigProvider, FloatButton } from 'antd';
 import { createContext, useEffect, useMemo, useState } from 'react';
+import { FormatPainterOutlined } from '@ant-design/icons';
 
 interface ThemeContextProps {
   darkTheme: boolean;
@@ -57,6 +58,7 @@ const ThemeProvider = ({ children }: ThemeProviderProps) => {
         }}
       >
         {children}
+        <FloatButton icon={<FormatPainterOutlined />} onClick={toggleTheme} />
       </ConfigProvider>
     </ThemeContext.Provider>
   )

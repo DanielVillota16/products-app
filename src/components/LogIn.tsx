@@ -1,30 +1,33 @@
 import { Button, Checkbox, Form, Input, Typography } from "antd";
 import { LockOutlined, UserOutlined } from '@ant-design/icons';
 import { useNavigate } from "react-router-dom";
+import { useContext } from "react";
+import { ThemeContext } from "../context/ThemeContext";
 
 const LogIn = () => {
 
+  const { currentTheme } = useContext(ThemeContext);
   const navigate = useNavigate();
 
   const onFinish = (values: any) => {
     navigate('/products');
     console.log('Success:', values);
   };
-  
+
   const onFinishFailed = (errorInfo: any) => {
     console.log('Failed:', errorInfo);
   };
 
   return (
-    <>
-      <Typography.Title style={{ textAlign: 'center' }} >Log in</Typography.Title>
+    <div style={{ minHeight: '98vh', background: currentTheme.colorBgBase }}>
+      <br />
+      <Typography.Title style={{ textAlign: 'center', marginTop: 0 }} >Log in</Typography.Title>
       <div style={{
-        textAlign: 'center', 
+        textAlign: 'center',
         marginTop: '50px',
         display: 'flex',
         justifyContent: 'center',
       }} >
-
         <Form
           name="normal_login"
           style={{ maxWidth: '500px', }}
@@ -52,21 +55,17 @@ const LogIn = () => {
             <Form.Item name="remember" valuePropName="checked" noStyle>
               <Checkbox>Remember me</Checkbox>
             </Form.Item>
-
-            <a href="">
-              Forgot password
-            </a>
           </Form.Item>
-
           <Form.Item>
             <Button type="primary" htmlType="submit">
               Log in
             </Button>
-            <p>Or <a href="signup">register now!</a></p>
+            <p>Did you <a href="">forget your password</a>?</p>
+            <p>Or if you don't have an account, <a href="signup">register now</a>!</p>
           </Form.Item>
         </Form>
       </div>
-    </>
+    </div>
   )
 }
 

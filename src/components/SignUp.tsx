@@ -6,7 +6,9 @@ import {
   Select,
   Typography,
 } from 'antd';
+import { useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { ThemeContext } from '../context/ThemeContext';
 
 const { Option } = Select;
 
@@ -36,6 +38,7 @@ const tailFormItemLayout = {
 const SignUp = () => {
   const [form] = Form.useForm();
   const navigate = useNavigate();
+  const { currentTheme } = useContext(ThemeContext);
 
   const onFinish = (values: any) => {
     navigate("/products");
@@ -51,10 +54,11 @@ const SignUp = () => {
   );
 
   return (
-    <>
-      <Typography.Title style={{ textAlign: 'center' }} >Sign up</Typography.Title>
+    <div style={{ minHeight: '98vh', background: currentTheme.colorBgBase }}>
+      <br />
+      <Typography.Title style={{ textAlign: 'center', marginTop: 0 }} >Sign up</Typography.Title>
       <div style={{
-        textAlign: 'center', 
+        textAlign: 'center',
         marginTop: '50px',
         display: 'flex',
         justifyContent: 'center',
@@ -64,6 +68,7 @@ const SignUp = () => {
           form={form}
           name="register"
           onFinish={onFinish}
+          initialValues={{ prefix: '57' }}
           style={{ maxWidth: 600 }}
           scrollToFirstError
         >
@@ -151,7 +156,7 @@ const SignUp = () => {
           </Form.Item>
         </Form>
       </div>
-    </>
+    </div>
   )
 }
 
