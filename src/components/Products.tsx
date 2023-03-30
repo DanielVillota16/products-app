@@ -25,6 +25,8 @@ const Products = () => {
 
   const unsetEditingKey = () => setEditingKey(Constants.INVALID_KEY);
 
+  const addItemKeys = (data: Item[]) => data.map((item: Item, index: number) => ({ ...item, key: index }));
+
   const edit = (record: Partial<Item> & { key: number }) => {
     setImageToUpload(record.productImageURL);
     form.setFieldsValue({ ...record });
@@ -32,8 +34,9 @@ const Products = () => {
   };
 
   const cancel = () => {
-    const index = typeof editingKey === 'number' ? editingKey : parseInt(editingKey);
-    if (data[index].id === undefined) setData([...data.slice(1)]);
+    if (editingKey > Constants.INVALID_KEY && data[editingKey]?.id === undefined) {
+      setData([...data.slice(1)]);
+    }
     unsetEditingKey();
   };
 
@@ -49,12 +52,13 @@ const Products = () => {
           ...item,
           ...row,
         });
-        setData(newData.map((item: Item, index: number) => ({ ...item, key: index })));
+        const newDataWithKeys = addItemKeys(newData);
+        setData(newDataWithKeys);
         unsetEditingKey();
       } else {
         const newProduct: Item = { ...row, id: Math.floor(Math.random() * 1000 + 1000) };
-        const finalData = [newProduct, ...newData.slice(1)].map((item: Item, index: number) => ({ ...item, key: index }));
-        setData(finalData);
+        const newDataWithKeys = addItemKeys([newProduct, ...newData.slice(1)]);
+        setData(newDataWithKeys);
         unsetEditingKey();
       }
       form.resetFields();
@@ -69,7 +73,7 @@ const Products = () => {
     setImageToUpload(undefined);
     const defaultItem: Item = { key: 0, name: '', description: '', productImageURL: '' };
     const newData: Item[] = [defaultItem, ...data];
-    const dataWithfixedKeys = newData.map((item: Item, index: number): Item => ({ ...item, key: index }));
+    const dataWithfixedKeys = addItemKeys(newData);
     setEditingKey(0);
     setData(dataWithfixedKeys);
   }
@@ -79,7 +83,8 @@ const Products = () => {
     const index = newData.findIndex((item: Item) => key === item.key);
     if (index > Constants.INVALID_KEY) {
       newData.splice(index, 1);
-      setData(newData.map((item: Item, index: number) => ({ ...item, key: index })));
+      const newDataWithKeys = addItemKeys(newData);
+      setData(newDataWithKeys);
     }
   }
 
