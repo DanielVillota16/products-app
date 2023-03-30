@@ -1,8 +1,7 @@
 export interface Item {
-  key: React.Key;
+  id?: number;
+  key: number;
   name: string;
   description: string;
   productImageURL: string;
-  price: number;
-  quantity: number;
 }

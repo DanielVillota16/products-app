@@ -16,7 +16,7 @@ interface View {
   viewTitle: string;
   icon: React.ReactNode;
   route: string;
-  component: () => JSX.Element;
+  component: JSX.Element;
 }
 
 type KeylessView = Omit<View, 'key'>;
@@ -26,31 +26,31 @@ interface BreadcrumbItem {
   title: JSX.Element | string;
 }
 
-const keylessViews: KeylessView[] = [
-  {
-    icon: <ShoppingCartOutlined />,
-    menuName: "Products",
-    viewTitle: "Products 🛒",
-    route: "products",
-    component: Products,
-  },
-  {
-    icon: <UserOutlined />,
-    menuName: "Account",
-    viewTitle: "Account 👤",
-    route: "account",
-    component: Account,
-  }
-]
-
-const views: View[] = keylessViews.map((v: KeylessView, index: number): View => ({ ...v, key: index }));
-
 const Home = () => {
 
   const [chosenView, setChosenView] = useState(0);
   const { currentTheme } = useContext(ThemeContext);
   const navigate = useNavigate();
   const { pathname } = useLocation();
+
+  const keylessViews: KeylessView[] = [
+    {
+      icon: <ShoppingCartOutlined />,
+      menuName: "Products",
+      viewTitle: "Products 🛒",
+      route: "products",
+      component: <Products />,
+    },
+    {
+      icon: <UserOutlined />,
+      menuName: "Account",
+      viewTitle: "Account 👤",
+      route: "account",
+      component: <Account />,
+    }
+  ]
+
+  const views: View[] = keylessViews.map((v: KeylessView, index: number): View => ({ ...v, key: index }));
 
   const getItem = (
     label: React.ReactNode,
@@ -99,7 +99,10 @@ const Home = () => {
           />
           <Routes>
             {
-              views.map((view: View, index: number) => <Route key={index} path={view.route} Component={view.component} />)
+              views.map((view: View, index: number) => {
+                const Element = () => view.component;
+                return <Route key={index} path={view.route} element={<Element />} />
+              })
             }
             <Route path='*' element={<Navigate to='/products' />} />
           </Routes>

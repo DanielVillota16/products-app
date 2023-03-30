@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Divider, Form, Image, Input, InputNumber, Popconfirm, Table, Typography, Upload, message } from "antd";
+import { Button, Divider, Form, Image, Input, InputNumber, Popconfirm, Table, Typography, Upload, message } from "antd";
 import { LoadingOutlined, PlusOutlined } from '@ant-design/icons';
 import { Item } from "../types/Item";
 import { RcFile } from "antd/es/upload/interface";
@@ -85,6 +85,15 @@ const EditableCell: React.FC<EditableCellProps> = ({
 
   const inputNode = mapInputTypeToInput[inputType];
 
+  const rulesForImage = inputType === 'image' ?
+    {
+      rules: [
+        {
+          required: false,
+        },
+      ]
+    } : {};
+
   return (
     <td {...restProps}>
       {editing ? (
@@ -97,6 +106,7 @@ const EditableCell: React.FC<EditableCellProps> = ({
               message: `Please Input ${title}!`,
             },
           ]}
+          {...rulesForImage}
         >
           {inputNode}
         </Form.Item>
@@ -110,71 +120,81 @@ const EditableCell: React.FC<EditableCellProps> = ({
 const originData: Item[] = [];
 for (let i = 0; i < 100; i++) {
   originData.push({
-    key: i.toString(),
+    id: i,
+    key: i,
     name: `Product ${i}`,
     description: `Epic product ${i}`,
-    price: (i + 1) * 1000,
-    productImageURL: "https://exitocol.vtexassets.com/arquivos/ids/15754680/Extruido-Maiz-Flamin-Hot-CHEETOS-75-gr-1780935_a.jpg?v=638053581797000000",
-    quantity: i + 1,
+    productImageURL: "https://exitocol.vtexassets.com/arquivos/ids/15754680/Extruido-Maiz-Flamin-Hot-CHEETOS-75-grINVALID_KEY780935_a.jpg?v=638053581797000000",
   });
 }
+
+const INVALID_KEY = -1;
 
 const Products = () => {
 
   const [form] = Form.useForm();
   const [data, setData] = useState(originData);
   const [imageToUpload, setImageToUpload] = useState<string>();
-  const [editingKey, setEditingKey] = useState<React.Key>('');
+  const [editingKey, setEditingKey] = useState<number>(INVALID_KEY);
 
   const isEditing = (record: Item) => record.key === editingKey;
 
-  const edit = (record: Partial<Item> & { key: React.Key }) => {
+  const edit = (record: Partial<Item> & { key: number }) => {
+    setImageToUpload(record.productImageURL);
     form.setFieldsValue({ ...record });
     setEditingKey(record.key);
   };
 
   const cancel = () => {
-    setEditingKey('');
+    const index = typeof editingKey === 'number' ? editingKey : parseInt(editingKey);
+    if (data[index].id === undefined) setData([...data.slice(1)]);
+    setEditingKey(INVALID_KEY);
   };
 
-  const save = async (key: React.Key) => {
+  const save = async (record: Item) => {
+    const key = record.key;
     try {
+      if (!imageToUpload) throw "no image loaded";
       const row = { ...(await form.validateFields()), productImageURL: imageToUpload } as Item;
-      console.log(row);
       const newData = [...data];
-      const index = newData.findIndex((item) => key === item.key);
-      if (index > -1) {
-        const item = newData[index];
-        newData.splice(index, 1, {
+      if (record.id !== undefined) {
+        const item = newData[key];
+        newData.splice(key, 1, {
           ...item,
           ...row,
         });
-        setData(newData);
-        setEditingKey('');
+        setData(newData.map((item: Item, index: number) => ({...item, key: index})));
+        setEditingKey(INVALID_KEY);
       } else {
-        newData.push(row);
-        setData(newData);
-        setEditingKey('');
+        const newProduct: Item = { ...row, id: Math.floor(Math.random() * 1000 + 1000) };
+        console.log(newProduct);
+        const finalData = [newProduct, ...newData.slice(1)].map((item: Item, index: number) => ({...item, key: index}));
+        setData(finalData);
+        setEditingKey(INVALID_KEY);
       }
+      form.resetFields();
     } catch (errInfo) {
-      console.log('Validate Failed:', errInfo);
+      message.error(`Validate Failed: ${errInfo}`);
+    } finally {
+      setImageToUpload(undefined);
     }
   };
 
   const add = () => {
-    const defaultItem: Item = { description: '', key: '0', name: '', price: 0, quantity: 0, productImageURL: '' };
+    setImageToUpload(undefined);
+    const defaultItem: Item = { key: 0, name: '', description: '', productImageURL: '' };
     const newData: Item[] = [defaultItem, ...data];
-    const fixedKeys = newData.map((item: Item, index: number) => ({ ...item, key: `${index}` }));
-    setEditingKey('0');
-    setData(fixedKeys);
+    const dataWithfixedKeys = newData.map((item: Item, index: number): Item => ({ ...item, key: index }));
+    setEditingKey(0);
+    setData(dataWithfixedKeys);
   }
 
   const remove = (key: React.Key) => {
     const newData = [...data];
     const index = newData.findIndex((item: Item) => key === item.key);
-    if (index > -1) {
+    if (index > INVALID_KEY) {
       newData.splice(index, 1);
-      setData(newData);
+      setData(newData.map((item: Item, index: number) => ({...item, key: index})));
     }
   }
 
@@ -187,17 +207,6 @@ const Products = () => {
     {
       title: 'Description',
       dataIndex: 'description',
-      editable: true,
-    },
-    {
-      title: 'Price',
-      dataIndex: 'price',
-      editable: true,
-      render: (_: any, record: Item) => `$ ${record.price}`,
-    },
-    {
-      title: 'Quantity',
-      dataIndex: 'quantity',
       editable: true,
     },
     {
@@ -221,7 +230,7 @@ const Products = () => {
         const editable = isEditing(record);
         return editable ? (
           <span>
-            <Typography.Link onClick={() => save(record.key)}>
+            <Typography.Link onClick={() => save(record)}>
               Save
             </Typography.Link>
             <Divider type="vertical" />
@@ -231,12 +240,12 @@ const Products = () => {
           </span>
         ) : (
           <span>
-            <Typography.Link disabled={editingKey !== ''} onClick={() => edit(record)}>
+            <Typography.Link disabled={editingKey !== INVALID_KEY} onClick={() => edit(record)}>
               Edit
             </Typography.Link>
             <Divider type="vertical" />
             <Popconfirm title="Sure to delete?" onConfirm={() => remove(record.key)}>
-              <Typography.Link disabled={editingKey !== ''} >
+              <Typography.Link disabled={editingKey !== INVALID_KEY} >
                 Delete
               </Typography.Link>
             </Popconfirm>
@@ -264,22 +273,25 @@ const Products = () => {
   });
 
   return (
-    <Form form={form} component={false}>
-      <Table
-        components={{
-          body: {
-            cell: EditableCell,
-          },
-        }}
-        bordered
-        dataSource={data}
-        columns={mergedColumns}
-        scroll={{ x: true }}
-        pagination={{
-          onChange: cancel,
-        }}
-      />
-    </Form>
+    <>
+      <div style={{ right: 25, top: 100, position: 'absolute' }}><Button onClick={add}>Add</Button></div>
+      <Form form={form} component={false}>
+        <Table
+          components={{
+            body: {
+              cell: EditableCell,
+            },
+          }}
+          bordered
+          dataSource={data}
+          columns={mergedColumns}
+          scroll={{ x: true }}
+          pagination={{
+            onChange: cancel,
+          }}
+        />
+      </Form>
+    </>
   );
 }
 
