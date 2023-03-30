@@ -1,6 +1,6 @@
 import { Form, Input, InputNumber } from "antd";
-import { Item } from "../types/Item";
-import UploadProductImage from "./Upload";
+import UploadProductImage from "./UploadProductImage";
+import { Item } from "../../types/Item";
 
 export interface EditableCellProps extends React.HTMLAttributes<HTMLElement> {
   editing: boolean;

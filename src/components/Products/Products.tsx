@@ -1,9 +1,11 @@
 import { useState } from "react";
-import { Button, Divider, Form, Image, Popconfirm, Table, Typography, message } from "antd";
-import { Item } from "../types/Item";
-import EditableCell, { EditableCellProps } from "./EditableCell";
-import { Constants } from "../constants/Constants";
+import { Button, Form, Table, message } from "antd";
+
+import EditableCell from "./EditableCell";
+
 import mergedColumns from "./ProductsConfig";
+import { Item } from "../../types/Item";
+import { Constants } from "../../constants/Constants";
 
 const originData: Item[] = [];
 for (let i = 0; i < 100; i++) {

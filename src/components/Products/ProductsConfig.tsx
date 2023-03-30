@@ -1,7 +1,7 @@
 import { Typography, Image, Divider, Popconfirm } from "antd";
-import { Item } from "../types/Item";
 import { EditableCellProps } from "./EditableCell";
-import { Constants } from "../constants/Constants";
+import { Constants } from "../../constants/Constants";
+import { Item } from "../../types/Item";
 
 interface ColumnsProps {
   editingKey: number;

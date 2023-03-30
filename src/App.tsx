@@ -1,8 +1,6 @@
 import { Route, Routes } from 'react-router-dom';
-import Home from './components/Home';
-import LogIn from './components/LogIn';
-import SignUp from './components/SignUp';
 import { ThemeProvider } from './context/ThemeContext';
+import { Home, LogIn, SignUp } from './components';
 
 function App() {
 

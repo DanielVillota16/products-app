@@ -8,7 +8,7 @@ import {
 } from 'antd';
 import { useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ThemeContext } from '../context/ThemeContext';
+import { ThemeContext } from '../../context/ThemeContext';
 
 const { Option } = Select;
 

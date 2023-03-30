@@ -2,7 +2,7 @@ import { Button, Checkbox, Form, Input, Typography } from "antd";
 import { LockOutlined, UserOutlined } from '@ant-design/icons';
 import { useNavigate } from "react-router-dom";
 import { useContext } from "react";
-import { ThemeContext } from "../context/ThemeContext";
+import { ThemeContext } from "../../context/ThemeContext";
 
 const LogIn = () => {
 

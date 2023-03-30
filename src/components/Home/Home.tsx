@@ -1,12 +1,12 @@
 import { Breadcrumb, Layout, Menu, Typography } from "antd";
 import { HomeOutlined, ShoppingCartOutlined, UserOutlined } from '@ant-design/icons';
 import { Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
-import reactLogo from '../assets/react.svg';
+import reactLogo from '../../assets/react.svg';
 import { useContext, useState } from "react";
-import { ItemType } from "antd/es/menu/hooks/useItems";
-import Account from "./Account";
-import Products from "./Products";
-import { ThemeContext } from '../context/ThemeContext';
+import { ItemType as MenuItem } from "antd/es/menu/hooks/useItems";
+import Account from "../Account/Account";
+import Products from "../Products/Products";
+import { ThemeContext } from '../../context/ThemeContext';
 
 const { Header, Content, Footer, Sider } = Layout;
 
@@ -56,12 +56,12 @@ const Home = () => {
     label: React.ReactNode,
     key: React.Key,
     icon?: React.ReactNode,
-    children?: ItemType[]
-  ): ItemType => ({
+    children?: MenuItem[]
+  ): MenuItem => ({
     label, key, icon, children
   });
 
-  const items: ItemType[] = views.map((view: View) => getItem(view.menuName, view.key, view.icon));
+  const items: MenuItem[] = views.map((view: View) => getItem(view.menuName, view.key, view.icon));
 
   const extraBreadcrumbItems: Array<BreadcrumbItem> = pathname.split('/').filter(item => item).map(
     item => ({
