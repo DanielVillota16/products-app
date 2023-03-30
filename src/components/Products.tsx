@@ -1,23 +1,68 @@
 import { useState } from "react";
-import { Divider, Form, Image, Input, InputNumber, Popconfirm, Table, Typography } from "antd";
-
-interface Item {
-  key: React.Key;
-  name: string;
-  description: string;
-  productImageURL: string;
-  price: number;
-  quantity: number;
-}
+import { Divider, Form, Image, Input, InputNumber, Popconfirm, Table, Typography, Upload, message } from "antd";
+import { LoadingOutlined, PlusOutlined } from '@ant-design/icons';
+import { Item } from "../types/Item";
+import { RcFile } from "antd/es/upload/interface";
 
 interface EditableCellProps extends React.HTMLAttributes<HTMLElement> {
   editing: boolean;
   dataIndex: string;
   title: any;
-  inputType: 'number' | 'text';
+  inputType: 'number' | 'text' | 'image';
   record: Item;
   index: number;
   children: React.ReactNode;
+  onUploadImage: (url: string) => void;
+}
+
+const getBase64 = (img: RcFile, callback: (url: string) => void) => {
+  const reader = new FileReader();
+  reader.addEventListener('load', () => callback(reader.result as string));
+  reader.readAsDataURL(img);
+};
+
+const beforeUpload = (file: RcFile) => {
+  const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png';
+  if (!isJpgOrPng) {
+    message.error('You can only upload JPG/PNG file!');
+  }
+  const isLt2M = file.size / 1024 / 1024 < 2;
+  if (!isLt2M) {
+    message.error('Image must smaller than 2MB!');
+  }
+  return isJpgOrPng && isLt2M;
+};
+
+const UploadProductImage: React.FC<{ onUpload: (url: string) => void }> = ({ onUpload }) => {
+
+  const [loading, setLoading] = useState(false);
+  const [imageUrl, setImageUrl] = useState<string>();
+
+  const uploadButton = (
+    <div>
+      {loading ? <LoadingOutlined /> : <PlusOutlined />}
+      <div style={{ marginTop: 8 }}>Upload</div>
+    </div>
+  );
+
+  return (
+    <Upload
+      listType="picture-card"
+      showUploadList={false}
+      beforeUpload={beforeUpload}
+      customRequest={(info) => {
+        setLoading(true);
+        getBase64(info.file as RcFile, (url) => {
+          setLoading(false);
+          setImageUrl(url);
+          onUpload(url);
+        })
+      }}
+    >
+      {imageUrl ? <img src={imageUrl} alt="avatar" style={{ width: '100%' }} /> : uploadButton}
+    </Upload>
+  )
+
 }
 
 const EditableCell: React.FC<EditableCellProps> = ({
@@ -28,9 +73,17 @@ const EditableCell: React.FC<EditableCellProps> = ({
   record,
   index,
   children,
+  onUploadImage,
   ...restProps
 }) => {
-  const inputNode = inputType === 'number' ? <InputNumber /> : <Input />;
+
+  const mapInputTypeToInput = {
+    number: <InputNumber />,
+    text: <Input />,
+    image: <UploadProductImage onUpload={onUploadImage} />,
+  }
+
+  const inputNode = mapInputTypeToInput[inputType];
 
   return (
     <td {...restProps}>
@@ -70,12 +123,13 @@ const Products = () => {
 
   const [form] = Form.useForm();
   const [data, setData] = useState(originData);
+  const [imageToUpload, setImageToUpload] = useState<string>();
   const [editingKey, setEditingKey] = useState<React.Key>('');
 
   const isEditing = (record: Item) => record.key === editingKey;
 
   const edit = (record: Partial<Item> & { key: React.Key }) => {
-    form.setFieldsValue({ name: '', age: '', address: '', ...record });
+    form.setFieldsValue({ ...record });
     setEditingKey(record.key);
   };
 
@@ -85,8 +139,8 @@ const Products = () => {
 
   const save = async (key: React.Key) => {
     try {
-      const row = (await form.validateFields()) as Item;
-
+      const row = { ...(await form.validateFields()), productImageURL: imageToUpload } as Item;
+      console.log(row);
       const newData = [...data];
       const index = newData.findIndex((item) => key === item.key);
       if (index > -1) {
@@ -149,6 +203,7 @@ const Products = () => {
     {
       title: 'Image',
       dataIndex: 'productImageURL',
+      editable: true,
       render: (_: any, record: Item) => (
         <Image
           width={100}
@@ -197,13 +252,14 @@ const Products = () => {
     }
     return {
       ...col,
-      onCell: (record: Item) => ({
+      onCell: (record: Item): EditableCellProps => ({
         record,
-        inputType: ['price', 'quantity'].includes(col.dataIndex) ? 'number' : 'text',
+        onUploadImage: (url) => setImageToUpload(url),
+        inputType: ['price', 'quantity'].includes(col.dataIndex) ? 'number' : col.dataIndex === 'productImageURL' ? 'image' : 'text',
         dataIndex: col.dataIndex,
         title: col.title,
         editing: isEditing(record),
-      }),
+      } as EditableCellProps),
     };
   });
 
@@ -218,7 +274,6 @@ const Products = () => {
         bordered
         dataSource={data}
         columns={mergedColumns}
-        rowClassName="editable-row"
         scroll={{ x: true }}
         pagination={{
           onChange: cancel,
