@@ -40,7 +40,7 @@ const getColumns = ({ save, edit, remove, cancel, editingKey }: ColumnsProps) =>
           preview={{
             height: '50%'
           }}
-          src={record.productImageURL}
+          src={`${Constants.IMAGES_URL}/${record.productImageURL}`}
         />
       )
     },
