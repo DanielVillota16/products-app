@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Button, Form, Table, message } from "antd";
 import EditableCell from "./EditableCell";
 import mergedColumns from "./ProductsConfig";
-import { Item } from "../../types/Item";
+import { FullItem, ShowItem } from "../../types/Item";
 import { Constants } from "../../constants/Constants";
 import { ProductsService } from "../../services/Products/Products";
 import { base64ToFile, contentTypeToExtensionMap, getContentTypeFromBase64 } from "../../util/util";
@@ -10,7 +10,7 @@ import { base64ToFile, contentTypeToExtensionMap, getContentTypeFromBase64 } fro
 const Products = () => {
 
   const [form] = Form.useForm();
-  const [data, setData] = useState<Item[]>([]);
+  const [data, setData] = useState<ShowItem[]>([]);
   const [imageToUpload, setImageToUpload] = useState<string>();
   const [imageToUploadFile, setImageToUploadFile] = useState<File>();
   const [editingKey, setEditingKey] = useState<number>(Constants.INVALID_KEY);
@@ -31,44 +31,47 @@ const Products = () => {
 
   const fetchData = () => {
     const request = ProductsService.getAll();
-    request.then((items: Item[]) => {
+    request.then((items: FullItem[]) => {
       setData(addItemKeys(items));
-    }).catch((_:any) => console.log('error while fetching'));
+    }).catch((_: any) => console.log('error while fetching'));
   }
 
   const unsetEditingKey = () => setEditingKey(Constants.INVALID_KEY);
 
-  const addItemKeys = (data: Item[]) => data.map((item: Item, index: number) => ({ ...item, key: index }));
+  const addItemKeys = (data: FullItem[]): ShowItem[] => data.map((item: FullItem, index: number) => ({ ...item, key: index }));
 
-  const edit = (record: Partial<Item> & { key: number }) => {
-    form.setFieldsValue({ ...record });
+  const edit = (record: ShowItem) => {
+    form.setFieldsValue(record);
     setEditingKey(record.key);
   };
 
   const cancel = () => {
-    const addingProduct = editingKey > Constants.INVALID_KEY && data[editingKey]?.id === undefined;
+    const addingProduct = editingKey > Constants.INVALID_KEY && data[editingKey].id === -1;
     if (addingProduct) {
       setData(addItemKeys([...data.slice(1)]));
     }
     unsetEditingKey();
   };
 
-  const save = async (record: Item) => {
+  const save = async (record: ShowItem) => {
     const key = record.key;
     try {
-      const row = { ...(await form.validateFields())} as Item;
-      const { productImageURL, ...item} = data[key];
-      let request: Promise<Item>;
-      const posting: boolean = record.id === undefined;
+      let { id, name, description } = data[key];
+      const { name: newName, description: newDescription } = (await form.validateFields());
+      name = newName || name;
+      description = newDescription || description;
+      let request: Promise<FullItem>;
+      const posting: boolean = record.id === -1;
       if (posting) {
-        //request = ProductsService.post({ ...item, ...row });
-        if (!imageToUploadFile) throw "no image loaded";
-        request = ProductsService.postWithFile({ ...item, ...row }, imageToUploadFile);
+        if (imageToUpload === undefined) {
+          throw 'missing image file';
+        }
+        request = ProductsService.post({ name, description, imageB64: imageToUpload });
       } else {
-        request = ProductsService.putWithFile({ ...item, ...row }, imageToUploadFile);
+        request = ProductsService.put({ id, name, description, imageB64: imageToUpload });
       }
       request
-        .then((_: Item) => fetchData())
+        .then((_: FullItem) => fetchData())
         .catch((_: any) => {
           cancel();
           message.error("Request failed");
@@ -78,6 +81,7 @@ const Products = () => {
           form.resetFields();
         });
     } catch (errInfo) {
+      cancel();
       message.error(`Validate Failed: ${errInfo}`);
     } finally {
       setImageToUpload(undefined);
@@ -86,8 +90,8 @@ const Products = () => {
 
   const add = () => {
     setImageToUpload(undefined);
-    const defaultItem: Item = { key: 0, name: '', description: '', productImageURL: '' };
-    const newData: Item[] = [defaultItem, ...data];
+    const defaultItem: ShowItem = { id: -1, key: 0, name: '', description: '', productImageURL: '' };
+    const newData: ShowItem[] = [defaultItem, ...data];
     const dataWithfixedKeys = addItemKeys(newData);
     setData(dataWithfixedKeys);
     setEditingKey(0);
@@ -108,7 +112,7 @@ const Products = () => {
       .catch((_: any) => message.error("Request failed"));
   }
 
-  const onUploadImage = (url: string) => setImageToUpload(url);
+  const onUploadImage = (b64: string) => setImageToUpload(b64);
 
   return (
     <>

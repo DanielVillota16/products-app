@@ -1,13 +1,13 @@
 import { Form, Input, InputNumber } from "antd";
 import UploadProductImage from "./UploadProductImage";
-import { Item } from "../../types/Item";
+import { ShowItem } from "../../types/Item";
 
 export interface EditableCellProps extends React.HTMLAttributes<HTMLElement> {
   editing: boolean;
   dataIndex: string;
   title: any;
   inputType: 'number' | 'text' | 'image';
-  record: Item;
+  record: ShowItem;
   index: number;
   children: React.ReactNode;
   onUploadImage: (url: string) => void;
